@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI黑话翻译器 - 让AI术语不再难懂</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#7c3aed;--primary-light:#a78bfa;--primary-bg:#f5f3ff;--primary-700:#6d28d9;--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-400:#9ca3af;--gray-500:#6b7280;--gray-600:#4b5563;--gray-700:#374151;--gray-900:#111827;--green-bg:#ecfdf5;--green-text:#047857;--amber-bg:#fffbeb;--amber-text:#b45309;--red-bg:#fef2f2;--red-text:#b91c1c}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans SC',sans-serif;background:#fff;color:var(--gray-900);-webkit-font-smoothing:antialiased;line-height:1.6}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font:inherit;border:none;background:none}
+
+/* Nav */
+.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--gray-100);height:56px;display:flex;align-items:center}
+.nav-inner{max-width:960px;margin:0 auto;padding:0 16px;width:100%;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:600;color:var(--gray-900);cursor:pointer}
+.nav-logo:hover{color:var(--primary)}
+
+/* Search */
+.hero{max-width:960px;margin:0 auto;padding:64px 16px 48px;text-align:center}
+.hero h1{font-size:2.5rem;font-weight:700;margin-bottom:12px}
+.hero h1 span{color:var(--primary)}
+.hero p{font-size:1.1rem;color:var(--gray-500);margin-bottom:32px;max-width:480px;margin-left:auto;margin-right:auto}
+.search-wrap{max-width:600px;margin:0 auto;position:relative}
+.search-wrap input{width:100%;padding:14px 100px 14px 44px;font-size:15px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:12px;outline:none;transition:all .2s}
+.search-wrap input:focus{background:#fff;box-shadow:0 0 0 3px rgba(124,58,237,.15);border-color:transparent}
+.search-wrap .icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray-400)}
+.search-wrap button{position:absolute;right:8px;top:50%;transform:translateY(-50%);padding:8px 16px;background:var(--primary);color:#fff;font-size:13px;font-weight:500;border-radius:8px;transition:background .2s}
+.search-wrap button:hover{background:var(--primary-700)}
+
+/* Section */
+.section{max-width:960px;margin:0 auto;padding:0 16px 48px}
+.section-title{font-size:1.1rem;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+/* Hot terms */
+.hot-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.hot-item{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--primary-bg);color:var(--primary-700);font-size:14px;font-weight:500;border-radius:8px;cursor:pointer;transition:background .2s}
+.hot-item:hover{background:#ede9fe}
+
+/* Category grid */
+.cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media(max-width:768px){.cat-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.cat-grid{grid-template-columns:repeat(2,1fr)}}
+.cat-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 8px;background:#fff;border:1px solid var(--gray-100);border-radius:12px;cursor:pointer;transition:all .2s;text-align:center}
+.cat-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.06);transform:translateY(-1px)}
+.cat-item .emoji{font-size:1.5rem}
+.cat-item .name{font-size:13px;font-weight:500;color:var(--gray-700)}
+.cat-item .name:hover{color:var(--primary)}
+.cat-item .count{font-size:11px;color:var(--gray-400)}
+
+/* Tag filter */
+.tag-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.tag-item{display:inline-flex;align-items:center;padding:4px 10px;background:var(--primary-bg);color:var(--primary-700);font-size:12px;font-weight:500;border-radius:9999px;cursor:pointer;transition:all .2s;border:none}
+.tag-item:hover{background:#ede9fe}
+.tag-item.active{background:var(--primary);color:#fff}
+
+/* Term cards grid */
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:768px){.cards-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.cards-grid{grid-template-columns:1fr}}
+
+/* Term card */
+.card{padding:20px;background:#fff;border:1px solid var(--gray-100);border-radius:12px;cursor:pointer;transition:all .2s}
+.card:hover{box-shadow:0 2px 8px rgba(0,0,0,.06);transform:translateY(-1px)}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px}
+.card-name{font-size:15px;font-weight:600;color:var(--gray-900);transition:color .2s}
+.card:hover .card-name{color:var(--primary)}
+.card-en{font-size:11px;color:var(--gray-400);margin-bottom:4px}
+.card-desc{font-size:13px;color:var(--gray-600);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.card-tag{padding:2px 8px;background:var(--primary-bg);color:var(--primary-700);font-size:11px;font-weight:500;border-radius:9999px}
+
+/* Difficulty badges */
+.difficulty{display:inline-flex;align-items:center;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:500;flex-shrink:0}
+.difficulty-新手{background:var(--green-bg);color:var(--green-text)}
+.difficulty-进阶{background:var(--amber-bg);color:var(--amber-text)}
+.difficulty-专业{background:var(--red-bg);color:var(--red-text)}
+
+/* Detail page */
+.detail{max-width:720px;margin:0 auto;padding:32px 16px}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray-400);margin-bottom:32px}
+.breadcrumb a:hover{color:var(--primary)}
+.detail-header{margin-bottom:32px}
+.detail-header h1{font-size:2rem;font-weight:700;margin-bottom:8px}
+.detail-en{font-size:1rem;color:var(--gray-400);margin-bottom:8px}
+.detail-aliases{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.detail-alias{padding:3px 10px;background:var(--gray-100);color:var(--gray-600);font-size:12px;border-radius:9999px}
+.detail-sentence{font-size:1.15rem;color:var(--primary);font-weight:500;line-height:1.6}
+.detail-section{margin-bottom:28px}
+.detail-section h2{font-size:1rem;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.detail-box{padding:20px;border-radius:12px;line-height:1.7}
+.detail-box.purple{background:rgba(124,58,237,.04);border:1px solid rgba(124,58,237,.1)}
+.detail-box.amber{background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.1)}
+.detail-text{color:var(--gray-600);line-height:1.7}
+.use-case{display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--gray-50);border-radius:8px}
+.use-case .num{width:22px;height:22px;display:flex;align-items:center;justify-content:center;background:rgba(124,58,237,.1);color:var(--primary-700);border-radius:50%;font-size:11px;font-weight:700;flex-shrink:0}
+.use-case .text{font-size:13px;color:var(--gray-700)}
+.example-box{padding:14px;background:var(--gray-50);border:1px solid var(--gray-100);border-radius:10px;font-size:13px;color:var(--gray-600);line-height:1.6}
+.related-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.related-item{display:inline-flex;align-items:center;padding:7px 14px;background:#fff;border:1px solid var(--gray-200);border-radius:8px;font-size:13px;font-weight:500;color:var(--gray-700);cursor:pointer;transition:all .2s}
+.related-item:hover{color:var(--primary);border-color:rgba(124,58,237,.2);box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.back-btn{display:inline-block;margin-top:40px;font-size:13px;color:var(--primary);cursor:pointer}
+.back-btn:hover{color:var(--primary-700)}
+
+/* Filter bar */
+.filter-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.filter-bar h2{font-size:1rem;font-weight:600}
+.filter-bar .clear{font-size:13px;color:var(--primary);cursor:pointer}
+
+/* Empty state */
+.empty{text-align:center;padding:48px;color:var(--gray-400)}
+.empty p:first-child{font-size:1rem;margin-bottom:6px}
+
+/* Footer */
+.footer{border-top:1px solid var(--gray-100);padding:32px 0;text-align:center;font-size:13px;color:var(--gray-400);margin-top:48px}
+
+/* Fade in */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .25s ease-out}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:3px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ===== DATA =====
+const categories=[
+{name:'AI基础概念',slug:'ai-basics',icon:'🧠',desc:'AI领域最核心的概念和术语'},
+{name:'大模型厂商',slug:'llm-vendors',icon:'🏢',desc:'国内外大模型厂商和产品'},
+{name:'Agent体系',slug:'agent',icon:'🤖',desc:'AI Agent相关的架构和框架'},
+{name:'RAG与知识库',slug:'rag-knowledge',icon:'📚',desc:'检索增强生成与向量知识库'},
+{name:'Prompt工程',slug:'prompt-engineering',icon:'✍️',desc:'提示词设计与优化技术'},
+{name:'MCP与工具调用',slug:'mcp-tools',icon:'🔧',desc:'模型上下文协议与工具调用'},
+{name:'AI开发工具',slug:'dev-tools',icon:'💻',desc:'AI编程和开发工具'},
+{name:'AI工作流与应用平台',slug:'workflow-platform',icon:'🔄',desc:'AI工作流和应用构建平台'},
+{name:'模型部署与API',slug:'deployment-api',icon:'☁️',desc:'模型部署方案和API服务'},
+{name:'AI商业应用',slug:'business-apps',icon:'💼',desc:'AI在商业场景中的应用'}
+];
+
+const terms=[
+{id:'ai',name:'AI',aliases:['人工智能','Artificial Intelligence'],category:'AI基础概念',tags:['基础概念','大模型'],difficulty:'新手',en:'Artificial Intelligence',one:'AI 就是让机器学会像人一样思考、理解和决策的技术。',plain:'想象你有一个超级助手，它能看懂文字、听懂话、识别图片，还能帮你写文章、做分析。AI 就是让电脑变成这样的超级助手。',tech:'AI 是计算机科学的一个分支，致力于创建能够执行通常需要人类智能的任务的系统，包括学习、推理、感知和自然语言理解。',why:'AI 正在改变几乎所有行业的运作方式，从自动化到决策支持，它让机器从"工具"变成"合作伙伴"。',biz:'客户提到"数字化转型"或"智能化"，背后往往就是 AI 在驱动。',useCases:['智能客服自动回答用户问题','AI 辅助医生读片诊断','自动化数据分析和报告生成'],related:['AGI','大模型','LLM','Multimodal'],examples:['一家保险公司用 AI 自动审核理赔材料，审核效率提升 80%。']},
+{id:'agi',name:'AGI',aliases:['通用人工智能'],category:'AI基础概念',tags:['基础概念','大模型'],difficulty:'进阶',en:'Artificial General Intelligence',one:'AGI 是能像人一样处理各种任务的 AI，不限于某个领域。',plain:'现在的 AI 大多是"偏科生"——下棋的不会写诗，画画的不会算数。AGI 是"全科生"，什么都能学、什么都能干。',tech:'AGI 指具备跨领域通用智能的 AI 系统，能理解、学习和应用知识到任意任务中。',why:'AGI 是 AI 领域的终极目标，实现后将彻底改变人类与机器的关系。',biz:'客户问"AI 能不能自己思考？"——这就是在问 AGI。目前还没实现。',useCases:['自主完成跨领域复杂任务','像人一样学习新技能','独立进行科学研究和创新'],related:['AI','LLM','大模型','Reasoning Model'],examples:['OpenAI 的最终目标就是实现 AGI。']},
+{id:'llm',name:'LLM',aliases:['大语言模型','Large Language Model'],category:'AI基础概念',tags:['基础概念','大模型'],difficulty:'新手',en:'Large Language Model',one:'LLM 是读过海量文本后，能理解和生成人类语言的大模型。',plain:'就像一个读了整个互联网的"超级学霸"，你问什么它都能聊两句。ChatGPT 背后就是一个 LLM。',tech:'LLM 是基于 Transformer 架构、在海量文本数据上训练的大型神经网络模型，通过预测下一个 Token 来生成文本。',why:'LLM 是当前 AI 应用的核心引擎，几乎所有 AI 产品都基于 LLM 构建。',biz:'客户说的"大模型""ChatGPT 类产品"，底层就是 LLM。',useCases:['智能对话和问答','文档摘要和翻译','代码生成和辅助编程'],related:['大模型','Transformer','Token','Context Window'],examples:['GPT-4、Claude、GLM 都是典型的 LLM。']},
+{id:'foundation-model',name:'大模型',aliases:['基础模型','Foundation Model'],category:'AI基础概念',tags:['基础概念','大模型'],difficulty:'新手',en:'Foundation Model',one:'大模型是经过海量数据训练的 AI 基础引擎，可以适配各种下游任务。',plain:'大模型就像一个"全能型人才"——先上了综合大学（预训练），然后可以快速学会任何专业（微调）。',tech:'大模型指参数量巨大的深度学习模型，通过大规模预训练获得通用能力，再通过微调或 Prompt 适配下游任务。',why:'大模型范式让 AI 开发从"造轮子"变成"调参数"，大幅降低了 AI 应用的门槛。',biz:'客户说想"用大模型"，其实就是在说想用 LLM 做业务。',useCases:['企业知识库问答','智能客服','文档自动处理'],related:['LLM','Transformer','Fine-tuning'],examples:['一家银行用大模型自动审核贷款材料，效率提升 60%。']},
+{id:'token',name:'Token',aliases:['词元','标记'],category:'AI基础概念',tags:['基础概念'],difficulty:'新手',one:'Token 是 AI 处理文字的最小单位，大约相当于半个到一个小词。',plain:'AI 不是按"字"读文章的，而是把文章切成一个个 Token。Token 数量决定了 AI 能处理多少内容、花多少钱。',tech:'Token 是 LLM 处理文本的基本单元，通过分词器将原始文本映射为整数序列，直接影响计算成本和上下文容量。',why:'Token 是大模型计费和性能的关键指标。',biz:'客户问"用大模型贵不贵"，答案取决于 Token 用量。',useCases:['计算 API 调用成本','评估模型处理能力','优化输入减少 Token 消耗'],related:['LLM','Context Window','API'],examples:['GPT-4 输入约 $0.03/1K Token，输出约 $0.06/1K Token。']},
+{id:'context-window',name:'Context Window',aliases:['上下文窗口','上下文长度'],category:'AI基础概念',tags:['基础概念'],difficulty:'新手',en:'Context Window',one:'Context Window 是 AI 一次能记住和处理的文本长度上限。',plain:'就像人的短期记忆容量有限，AI 也有"记忆窗口"——一次对话中它能回看的最大文本量。',tech:'Context Window 指模型在一次推理中能处理的最大 Token 数量，由模型架构的位置编码机制决定。',why:'Context Window 大小直接影响模型能否处理长文档和多轮对话。',biz:'客户想"把 100 页合同丢给 AI 分析"，需要选 Context Window 足够大的模型。',useCases:['长文档分析','多轮复杂对话','大批量代码审查'],related:['Token','LLM','RAG'],examples:['Claude 3.5 支持 200K Token，约 15 万字。']},
+{id:'transformer',name:'Transformer',aliases:['注意力机制模型'],category:'AI基础概念',tags:['基础概念','技术架构'],difficulty:'进阶',one:'Transformer 是目前几乎所有大模型背后的核心架构，擅长理解文本之间的关系。',plain:'以前的 AI 读文章像逐字读，Transformer 像"扫描全文+画重点"——它能同时关注整段话，理解词与词之间的关系。',tech:'Transformer 是 2017 年提出的基于自注意力机制的神经网络架构，是 GPT、BERT 等模型的基础。',why:'Transformer 架构是大模型时代的基石。',biz:'要知道它是"大模型之所以强"的底层原因。',useCases:['自然语言理解和生成','机器翻译','文本摘要'],related:['LLM','大模型','Training'],examples:['GPT、BERT、GLM 都是 Transformer 架构。']},
+{id:'hallucination',name:'Hallucination',aliases:['幻觉','AI幻觉'],category:'AI基础概念',tags:['基础概念','风险'],difficulty:'新手',one:'Hallucination 是 AI 编造不存在信息的现象，俗称"一本正经地胡说八道"。',plain:'AI 有时候会"自信地胡说"——给出听起来很靠谱但完全是编造的答案。需要用 RAG 等技术来约束。',tech:'Hallucination 指模型生成看似合理但实际上与事实不符的内容，是 LLM 的固有缺陷。',why:'幻觉是 LLM 在企业级应用中最大的风险。',biz:'客户担心"AI 会不会乱说"，需要解释 RAG 等方案如何降低幻觉风险。',useCases:['医疗诊断中的错误信息','法律咨询中的编造法条','金融报告中的虚假数据'],related:['RAG','LLM','Fine-tuning'],examples:['AI 自信地说"爱因斯坦 1958 年获得诺贝尔奖"（实际是 1921 年），这就是幻觉。']},
+{id:'inference',name:'Inference',aliases:['推理','模型推理'],category:'AI基础概念',tags:['基础概念'],difficulty:'新手',en:'Inference',one:'Inference 是训练好的模型根据输入生成输出的过程，也就是"用模型"。',plain:'训练模型像"上学读书"，推理就是"毕业上班"。你给 AI 一个问题，它给出答案——这个过程就是推理。',tech:'Inference 是将训练好的模型用于新数据生成预测的过程，与 Training 相对。',why:'推理速度和成本直接决定用户体验和运营成本。',biz:'客户问"跑大模型要什么硬件"，问的就是推理阶段的资源需求。',useCases:['在线聊天机器人实时回复','批量文档处理','API 服务调用'],related:['Training','LLM','vLLM','API'],examples:['用户在 ChatGPT 输入问题，GPT-4 生成回答，这就是一次推理。']},
+{id:'training',name:'Training',aliases:['训练','模型训练'],category:'AI基础概念',tags:['基础概念'],difficulty:'新手',one:'Training 是让 AI 从数据中学习知识的过程，就像教小孩读书。',plain:'AI 的"学习"就是看大量数据找规律。训练过程需要消耗大量算力和时间。',tech:'Training 是通过反向传播算法在大规模数据集上优化模型参数的过程。',why:'训练决定了模型的基础能力。',biz:'一般企业不需要自己训练模型，但需要理解训练和微调的区别。',useCases:['预训练基础大模型','微调行业专用模型','持续训练更新模型'],related:['Fine-tuning','Inference','大模型'],examples:['GPT-4 的训练使用了超过 1 万亿 Token 的数据和数万块 A100 GPU。']},
+{id:'fine-tuning',name:'Fine-tuning',aliases:['微调','模型微调'],category:'AI基础概念',tags:['基础概念','模型优化'],difficulty:'进阶',en:'Fine-tuning',one:'Fine-tuning 是在已有大模型基础上，用专业数据让它更擅长某个领域。',plain:'大模型像"通才"，微调就是让它变成"专才"。比如给通用模型喂法律文书，它就成了法律专家。',tech:'Fine-tuning 是在预训练模型的基础上，使用领域特定的小规模数据进行继续训练。',why:'微调是企业将通用大模型变为行业专家的核心手段。',biz:'客户说"想让 AI 懂我们行业"，通常需要评估是微调还是 RAG。',useCases:['医疗领域专用模型','法律文书生成模型','金融风控模型'],related:['Training','LLM','大模型'],examples:['一家律所用 5 万份合同微调大模型，合同审查准确率从 70% 提升到 95%。']},
+{id:'reasoning-model',name:'Reasoning Model',aliases:['推理模型','思考模型'],category:'AI基础概念',tags:['基础概念','大模型'],difficulty:'进阶',en:'Reasoning Model',one:'Reasoning Model 是专门强化了逻辑推理能力的大模型，会"想清楚了再回答"。',plain:'普通 AI 像是"脱口而出"，推理模型像"先打草稿再回答"。OpenAI o1、DeepSeek-R1 就是推理模型。',tech:'Reasoning Model 通过 Chain-of-Thought、强化学习等技术增强了逻辑推理能力，用更多计算换取更高质量的输出。',why:'推理模型让 AI 在数学、编程、逻辑分析等任务上表现大幅提升。',biz:'客户需要 AI 做复杂分析时，推理模型比普通模型更可靠。',useCases:['复杂数学问题求解','多步骤逻辑推理','代码审查和 Bug 分析'],related:['LLM','Chain of Thought','大模型'],examples:['OpenAI o1 在数学竞赛题上的表现远超 GPT-4o。']},
+{id:'multimodal',name:'Multimodal',aliases:['多模态','多模态大模型'],category:'AI基础概念',tags:['基础概念','大模型'],difficulty:'新手',en:'Multimodal',one:'Multimodal 是 AI 同时理解和处理文字、图片、语音等多种类型信息的能力。',plain:'以前的 AI 只会读文字，多模态 AI 能看图、听声音、看视频——就像人一样。',tech:'Multimodal 指模型能同时处理和生成多种模态的数据，通过统一的表示学习实现跨模态理解。',why:'多模态是 AI 走向通用智能的关键一步。',biz:'客户说"想让 AI 看图说话"或"理解视频内容"，就需要多模态模型。',useCases:['图文混合内容理解','视频内容分析','语音+文字交互'],related:['LLM','AI','大模型'],examples:['GPT-4o 可以同时理解图片和文字。']},
+{id:'openai',name:'OpenAI',aliases:[],category:'大模型厂商',tags:['厂商','国外','大模型'],difficulty:'新手',one:'OpenAI 是 ChatGPT 的创造者，全球最有影响力的 AI 公司。',plain:'OpenAI 就是做出了 ChatGPT 的公司，它的 GPT 系列模型是行业标杆。',tech:'OpenAI 发布了 GPT-4、GPT-4o、o1 等领先模型，提供 OpenAI API 服务。',why:'OpenAI 定义了大模型行业的能力标准和产品形态。',biz:'做 AI 方案时，OpenAI 通常是首选参考。',useCases:['ChatGPT 对话和写作','GPT-4 API 接入企业系统','DALL-E 图像生成'],related:['LLM','API','大模型','Anthropic'],examples:['一家跨境电商用 GPT-4 API 自动生成多语言产品描述。']},
+{id:'anthropic',name:'Anthropic',aliases:[],category:'大模型厂商',tags:['厂商','国外','大模型'],difficulty:'新手',one:'Anthropic 是 Claude 的创造者，主打安全可控的大模型。',plain:'Anthropic 是 OpenAI 前员工创办的公司，Claude 系列模型以"安全""长上下文"著称。',tech:'Anthropic 发布了 Claude 系列模型，以 Constitutional AI 方法论著称。',why:'Claude 在编程、长文档分析等场景表现突出。',biz:'客户需要长文档处理或注重 AI 安全时，Claude 是很好的备选。',useCases:['长文档分析','代码生成','安全敏感场景'],related:['OpenAI','LLM','API','MCP'],examples:['一家律所用 Claude 3.5 分析 200 页法律合同。']},
+{id:'google-deepmind',name:'Google DeepMind',aliases:['DeepMind'],category:'大模型厂商',tags:['厂商','国外','大模型'],difficulty:'新手',one:'Google DeepMind 是谷歌的 AI 研究部门，推出了 Gemini 系列模型。',plain:'做 AlphaGo 的那个团队，后来推出了 Gemini 模型，在多模态方面很强。',tech:'Google DeepMind 发布了 Gemini 系列模型，具备原生多模态能力。',why:'Gemini 在多模态和长上下文方面有独特优势。',biz:'已在用谷歌云的客户，Gemini 是自然的选择。',useCases:['多模态内容理解','科学研究辅助','谷歌生态集成'],related:['OpenAI','Vertex AI','LLM'],examples:['谷歌用 Gemini 驱动全线产品的 AI 功能。']},
+{id:'deepseek',name:'DeepSeek',aliases:['深度求索','DS'],category:'大模型厂商',tags:['厂商','国内','大模型'],difficulty:'新手',one:'DeepSeek 是国产开源大模型的代表，以高性价比和推理能力著称。',plain:'DeepSeek 是国产大模型的黑马，开源免费，性能接近 GPT-4，成本低很多。',tech:'DeepSeek 发布了 DeepSeek-V3、DeepSeek-R1 等模型，采用 MoE 架构，完全开源。',why:'DeepSeek 证明了低成本也能做出高性能模型。',biz:'预算有限的客户，DeepSeek 是性价比最高的选择。',useCases:['私有化部署企业 AI','推理密集型任务','开源模型二次开发'],related:['LLM','大模型','Reasoning Model','Ollama'],examples:['一家创业公司用 DeepSeek-V3 替代 GPT-4，成本降低 90%。']},
+{id:'zhipu-ai',name:'智谱AI',aliases:['智谱','Zhipu'],category:'大模型厂商',tags:['厂商','国内','大模型'],difficulty:'新手',one:'智谱AI 是清华系国产大模型公司，GLM 系列模型在中文场景表现出色。',plain:'国内最早做大模型的公司之一，技术来自清华，GLM 系列中文能力很强。',tech:'智谱AI 发布了 GLM-4、GLM-4V 等模型，基于自研的 GLM 架构。',why:'智谱是国内大模型第一梯队厂商。',biz:'国内客户需要中文能力强、可私有化部署的方案时，智谱 GLM 是重要选项。',useCases:['中文内容生成','企业知识库','多模态应用'],related:['GLM','LLM','大模型'],examples:['一家媒体公司用 GLM-4 自动生成新闻摘要。']},
+{id:'glm',name:'GLM',aliases:['ChatGLM'],category:'大模型厂商',tags:['厂商','国内','大模型'],difficulty:'新手',en:'General Language Model',one:'GLM 是智谱AI 的大语言模型系列，中文能力突出。',plain:'GLM 是智谱AI 开发的国产大模型，开源版本可以免费下载使用。',tech:'GLM 基于自回归填空的预训练架构，GLM-4 支持 128K 上下文和多模态。',why:'GLM 是国产开源大模型的代表。',biz:'客户需要"国产替代"或"数据不出境"时，GLM 是首选方案之一。',useCases:['私有化部署','中文对话系统','企业 AI 助手'],related:['智谱AI','LLM','Fine-tuning'],examples:['一家国企用 GLM-4 私有化部署内部知识库问答系统。']},
+{id:'bytedance-ai',name:'字节跳动',aliases:['ByteDance AI'],category:'大模型厂商',tags:['厂商','国内','大模型'],difficulty:'新手',one:'字节跳动是豆包和 Coze 的母公司，AI 生态最完整的国内公司之一。',plain:'字节不只是做抖音的，还做大模型（豆包/Seed）、AI 平台（Coze）、AI 编程工具（Trae）。',tech:'字节跳动通过火山引擎提供大模型 API，发布豆包和 Seed 系列模型。',why:'字节系 AI 产品覆盖了模型、平台、工具全链路。',biz:'客户如果已用字节系产品，接入豆包/Coze 是最自然的选择。',useCases:['企业 AI 应用搭建','大模型 API 调用','AI 编程辅助'],related:['豆包','Coze','Trae','火山引擎'],examples:['一家公司用 Coze+豆包搭建了内部智能客服，零代码完成。']},
+{id:'volcengine',name:'火山引擎',aliases:['Volcengine'],category:'大模型厂商',tags:['厂商','国内','大模型','云服务'],difficulty:'进阶',one:'火山引擎是字节跳动的云服务平台，提供豆包大模型的 API 接口。',plain:'火山引擎就像字节的"阿里云"，想用豆包模型就走火山引擎的 API。',tech:'火山引擎是字节跳动旗下的企业级技术服务平台，提供大模型 API、向量数据库等服务。',why:'火山引擎是国内企业使用豆包大模型的官方通道。',biz:'客户想用豆包模型做方案，就需要对接火山引擎。',useCases:['豆包大模型 API 调用','企业 AI 平台搭建','向量数据库服务'],related:['豆包','字节跳动','API'],examples:['一家互联网公司通过火山引擎接入豆包模型。']},
+{id:'doubao',name:'豆包',aliases:['Doubao'],category:'大模型厂商',tags:['厂商','国内','大模型'],difficulty:'新手',one:'豆包是字节跳动推出的国产大模型，主打高性价比和中文能力。',plain:'字节跳动的大模型品牌，有手机 App 也有 API。模型便宜好用，中文能力很强。',tech:'豆包系列模型包括 Pro、Lite 等版本，通过火山引擎提供 API 服务。',why:'豆包以极致性价比打开了国产大模型市场。',biz:'预算敏感的客户，豆包是性价比最高的国产大模型选择之一。',useCases:['企业智能客服','内容生成','知识库问答'],related:['字节跳动','火山引擎','Coze','LLM'],examples:['一家教育公司用豆包模型做 AI 答疑，成本仅为 GPT-4 的十分之一。']},
+{id:'tencent-hunyuan',name:'腾讯混元',aliases:['混元','Hunyuan'],category:'大模型厂商',tags:['厂商','国内','大模型'],difficulty:'新手',one:'腾讯混元是腾讯自研的大模型，深度集成微信和企业微信生态。',plain:'腾讯混元最大的优势是和微信、企业微信、腾讯云深度打通。',tech:'腾讯混元系列模型支持多模态，通过腾讯云提供 API 服务。',why:'对于在微信生态做 AI 应用的场景，腾讯混元有天然优势。',biz:'客户如果在企业微信上做 AI 客服，腾讯混元是最佳选择。',useCases:['企业微信智能客服','微信生态 AI 应用','腾讯云 AI 服务'],related:['腾讯','LLM','API'],examples:['一家零售企业用腾讯混元+企业微信搭建 AI 客服。']},
+{id:'tongyi-qianwen',name:'通义千问',aliases:['千问','Qwen'],category:'大模型厂商',tags:['厂商','国内','大模型'],difficulty:'新手',en:'Tongyi Qianwen / Qwen',one:'通义千问是阿里云的大模型，开源生态活跃，Qwen 系列国际排名靠前。',plain:'阿里云的大模型品牌，Qwen 开源版本在全球开源模型中排名很高。',tech:'通义千问包括 Qwen2.5 等开源模型和闭源 API，支持 128K 上下文和多模态。',why:'Qwen 开源生态为国内开发者提供了高质量的自部署选择。',biz:'客户需要开源模型做私有化部署时，Qwen 系列是最优选择之一。',useCases:['私有化部署','开源模型二次开发','阿里云生态集成'],related:['阿里云','LLM','Ollama','Fine-tuning'],examples:['一家金融公司用 Qwen2.5-72B 私有化部署。']},
+{id:'wenxin',name:'文心一言',aliases:['文心','ERNIE Bot'],category:'大模型厂商',tags:['厂商','国内','大模型'],difficulty:'新手',one:'文心一言是百度推出的大模型产品，国内最早发布的 AI 对话产品之一。',plain:'百度的大模型，国内最早发布。百度搜索、百度文库等都已接入。',tech:'文心一言基于百度 ERNIE 系列模型，通过百度智能云提供 API 服务。',why:'百度是国内最早投入大模型的公司之一。',biz:'与百度生态关联紧密的客户，文心一言是自然的 AI 方案选择。',useCases:['百度生态 AI 应用','搜索增强','知识问答'],related:['百度','LLM','API'],examples:['百度文库用文心大模型实现一键生成 PPT。']},
+{id:'kimi',name:'Kimi',aliases:['月之暗面','Moonshot'],category:'大模型厂商',tags:['厂商','国内','大模型'],difficulty:'新手',one:'Kimi 是月之暗面推出的 AI 助手，以超长上下文著称。',plain:'国内最早支持超长上下文的 AI 产品，能把一整本书丢进去让它分析。',tech:'Kimi 由月之暗面开发，支持 200 万 Token 超长上下文。',why:'Kimi 证明了长上下文是 AI 产品的差异化卖点。',biz:'客户需要处理长文档、长报告时，Kimi 是值得推荐的选择。',useCases:['长文档分析','论文阅读辅助','报告自动摘要'],related:['LLM','Context Window','大模型'],examples:['一位律师用 Kimi 一次分析 300 页诉讼材料。']},
+{id:'agent',name:'Agent',aliases:['AI Agent','智能体'],category:'Agent体系',tags:['Agent','核心概念'],difficulty:'新手',one:'Agent 是能自主完成任务的 AI，不只是回答问题，而是"动手干活"。',plain:'ChatGPT 是"你问它答"，Agent 是"你说目标，它自己想办法完成"。像从客服变成了私人助理。',tech:'Agent 是基于 LLM 的自主系统，具备感知环境、制定计划、调用工具和反思调整的能力。',why:'Agent 是大模型从"对话工具"升级为"执行系统"的关键形态。',biz:'客户说"想让 AI 自动做事"——这就是 Agent。',useCases:['自动处理客户工单','自动生成并提交报告','自动监控数据异常并告警'],related:['Agent Harness','Agent Loop','Tool Use','MCP','Multi-Agent'],examples:['一个销售 Agent 自动查阅客户资料、分析需求、生成拜访提纲。']},
+{id:'multi-agent',name:'Multi-Agent',aliases:['多智能体','多Agent协作'],category:'Agent体系',tags:['Agent','架构'],difficulty:'进阶',en:'Multi-Agent System',one:'Multi-Agent 是多个 AI Agent 分工协作，一起完成复杂任务。',plain:'一个人干不了的活，一组人来干。Multi-Agent 就是让多个 AI"员工"各司其职。',tech:'Multi-Agent 系统由多个 Agent 实例组成，通过消息传递或编排流程协作。',why:'复杂业务场景需要多个角色协作。',biz:'客户说"想让 AI 同时处理多个环节"，Multi-Agent 就是对的架构。',useCases:['多角色内容生产流水线','多步骤审批自动化','跨系统数据协调'],related:['Agent','Agent Harness','CrewAI','AutoGen'],examples:['研究 Agent 调研市场，写作 Agent 写报告，审核 Agent 检查质量。']},
+{id:'agent-harness',name:'Agent Harness',aliases:['Harness','Agent运行框架'],category:'Agent体系',tags:['Agent','开发框架'],difficulty:'进阶',en:'Agent Harness',one:'Agent Harness 是管理和调度 AI Agent 执行任务的运行框架。',plain:'如果把 Agent 看成一个员工，Harness 就像它的工作台和项目经理。',tech:'Agent Harness 负责管理 Agent 的任务执行、工具调用、上下文传递和状态记录。',why:'它让 Agent 不只是聊天，而是可以稳定地执行复杂任务。',biz:'当客户想让 AI 自动完成复杂流程时，背后可能需要 Agent Harness。',useCases:['自动生成销售方案','自动分析企业资料','自动调用多个工具完成任务'],related:['Agent','Workflow','Tool Calling','MCP'],examples:['一个销售 Agent 自动查询客户资料、分析需求、生成拜访提纲。']},
+{id:'agent-loop',name:'Agent Loop',aliases:['Agent循环','智能体循环'],category:'Agent体系',tags:['Agent','核心概念'],difficulty:'进阶',en:'Agent Loop',one:'Agent Loop 是 Agent 持续思考→行动→观察→调整的循环过程。',plain:'Agent 不是"问一次答一次"，而是反复琢磨：想想怎么做→做一步→看看结果→再调整→直到完成。',tech:'Agent Loop 包含 Thought→Action→Observation 三个阶段，循环往复直到任务完成。',why:'Agent Loop 是 Agent 区别于普通聊天机器人的核心机制。',biz:'解释"AI 为什么能自动完成任务"时，Agent Loop 是最直观的解释模型。',useCases:['自动排查系统故障','多步骤数据分析','自动优化营销策略'],related:['Agent','ReAct','Reflection','Tool Use'],examples:['运维 Agent：发现异常→查日志→定位问题→重启服务→确认恢复。']},
+{id:'agent-memory',name:'Agent Memory',aliases:['Agent记忆','智能体记忆'],category:'Agent体系',tags:['Agent','核心概念'],difficulty:'进阶',en:'Agent Memory',one:'Agent Memory 是让 AI Agent 记住之前做过什么、学到了什么的能力。',plain:'没有记忆的 Agent 就像失忆症患者。Agent Memory 让它能记住用户偏好、历史对话，越用越聪明。',tech:'Agent Memory 分为短期记忆（上下文窗口内）和长期记忆（外部存储）。',why:'记忆是 Agent 做复杂任务和长期服务的基础。',biz:'客户想要"AI 越用越懂我"的体验，就需要给 Agent 加上记忆。',useCases:['长期客户服务中的上下文保持','个性化推荐','任务进度的跨会话追踪'],related:['Agent','RAG','Vector Database'],examples:['一个销售 Agent 记住了每个客户的沟通历史和偏好。']},
+{id:'tool-use',name:'Tool Use',aliases:['工具使用','工具调用'],category:'Agent体系',tags:['Agent','核心概念'],difficulty:'进阶',en:'Tool Use',one:'Tool Use 是 AI Agent 调用外部工具（API、数据库等）完成任务的能力。',plain:'Agent 光会"说"不够，还得会"做"。Tool Use 让 AI 能调用搜索、发邮件、查数据库等。',tech:'Tool Use 指 LLM 根据意图选择并调用预定义工具，通过 Function Calling 或 MCP 实现。',why:'Tool Use 是 Agent 从"对话"升级为"执行"的关键能力。',biz:'客户说"想让 AI 对接我们的系统"，背后就是 Tool Use。',useCases:['查询企业数据库','发送通知邮件','调用第三方 API 获取实时数据'],related:['Agent','Function Calling','MCP','API'],examples:['一个财务 Agent 自动调用 ERP 系统 API 拉取报表数据。']},
+{id:'reflection',name:'Reflection',aliases:['反思','自我反思'],category:'Agent体系',tags:['Agent','核心概念'],difficulty:'进阶',en:'Reflection',one:'Reflection 是 Agent 检查自己输出质量、发现错误并修正的能力。',plain:'人做完事会回头检查，Agent 也一样。Reflection 让 AI "三思而后行"。',tech:'Reflection 是 Agent 对自身输出进行评估和修正的机制。',why:'Reflection 是提高 Agent 可靠性的重要手段。',biz:'客户担心"AI 犯错怎么办"，Reflection 是一种自我纠错机制。',useCases:['代码生成后自动审查','方案输出的质量检查','数据分析结果的自检'],related:['Agent','Self-Correction','Agent Loop'],examples:['写作 Agent 生成报告后自动检查逻辑漏洞，发现问题就修正。']},
+{id:'langgraph',name:'LangGraph',aliases:[],category:'Agent体系',tags:['Agent','开发框架'],difficulty:'进阶',one:'LangGraph 是 LangChain 推出的 Agent 编排框架，用图结构定义 Agent 流程。',plain:'LangGraph 让你像画流程图一样设计 Agent 的工作流，支持循环、分支和并行。',tech:'LangGraph 基于 LangChain 构建，使用有向图定义 Agent 工作流，支持状态管理和条件路由。',why:'复杂 Agent 流程需要清晰的编排和控制。',biz:'客户需要构建复杂的 AI 工作流时，LangGraph 是主流选择。',useCases:['多步骤审批流程自动化','带人工审核的 Agent 工作流','条件分支的业务流程'],related:['Agent','Workflow','Multi-Agent','CrewAI'],examples:['一个银行用 LangGraph 构建了贷款审批 Agent。']},
+{id:'crewai',name:'CrewAI',aliases:[],category:'Agent体系',tags:['Agent','开发框架'],difficulty:'进阶',one:'CrewAI 是一个多 Agent 协作框架，让多个 AI 角色像团队一样工作。',plain:'CrewAI 让你定义一个"AI 团队"：研究员、写作员、审核员各司其职。',tech:'CrewAI 提供 Role-based Agent 定义、Task 分配和 Process 编排。',why:'CrewAI 降低了 Multi-Agent 系统的开发门槛。',biz:'客户需要"一组 AI 协作完成复杂任务"时，CrewAI 是最直观的方案。',useCases:['内容生产流水线','市场调研自动化','多角色协作的业务流程'],related:['Multi-Agent','Agent','LangGraph'],examples:['研究员 AI 调研竞品，写手 AI 写报告，审核 AI 检查质量。']},
+{id:'rag',name:'RAG',aliases:['检索增强生成','Retrieval Augmented Generation'],category:'RAG与知识库',tags:['知识库','核心技术'],difficulty:'新手',en:'Retrieval-Augmented Generation',one:'RAG 是让 AI 先查资料再回答的技术，大幅减少"胡说八道"。',plain:'AI 回答之前，先从知识库里检索相关内容，然后基于真实内容回答。像开卷考试。',tech:'RAG 将信息检索与文本生成结合，先检索相关文档片段，再输入 LLM 生成回答。',why:'RAG 是企业级 AI 应用最成熟的技术方案。',biz:'客户说"想让 AI 回答基于我们自己的数据"——RAG 是标配方案。',useCases:['企业知识库问答','智能客服基于产品文档回答','法律/合规文档查询'],related:['Embedding','Vector Database','Chunking','Semantic Search'],examples:['一家保险公司用 RAG 让 AI 基于保险条款回答客户问题，准确率提升到 95%。']},
+{id:'embedding',name:'Embedding',aliases:['向量化','词嵌入'],category:'RAG与知识库',tags:['知识库','核心技术'],difficulty:'进阶',en:'Embedding',one:'Embedding 是把文字变成数字向量的技术，让 AI 能计算"意思有多接近"。',plain:'AI 看不懂文字但看得懂数字。Embedding 把文字翻译成数字，意思相近的文字数字也相近。',tech:'Embedding 将文本映射到高维向量空间，语义相似的文本距离更近。',why:'Embedding 是 RAG、语义搜索和推荐系统的底层技术。',biz:'客户要做知识库问答，第一步就是把文档 Embedding 化存入向量库。',useCases:['语义搜索','文档相似度计算','RAG 的索引构建'],related:['RAG','Vector Database','Semantic Search'],examples:['搜"退货政策"能找到"退款流程"——因为 Embedding 知道它们语义相近。']},
+{id:'vector-database',name:'Vector Database',aliases:['向量数据库','向量库'],category:'RAG与知识库',tags:['知识库','基础设施'],difficulty:'进阶',en:'Vector Database',one:'Vector Database 是专门存储和检索向量数据的数据库，是 RAG 的核心组件。',plain:'普通数据库存文字和数字，向量数据库存"意思"。能快速找到"意思最接近"的内容。',tech:'Vector Database 支持近似最近邻搜索（ANN），常用产品包括 Milvus、Pinecone、Qdrant 等。',why:'向量数据库是 RAG 架构的核心基础设施。',biz:'客户要做知识库方案时，向量数据库选型是关键决策。',useCases:['企业知识库存储和检索','推荐系统','图像相似度搜索'],related:['RAG','Embedding','Milvus','Pinecone'],examples:['一家企业用 Milvus 存储 10 万份文档向量，实现毫秒级语义搜索。']},
+{id:'chunking',name:'Chunking',aliases:['分块','文本分块'],category:'RAG与知识库',tags:['知识库','数据处理'],difficulty:'进阶',en:'Chunking',one:'Chunking 是把长文档切成小段的技术，让 AI 能逐段检索和理解。',plain:'AI 不能一口吞下一整本书，Chunking 就是把书拆成一段一段的。',tech:'Chunking 是将长文档分割为小段的过程，常见策略包括固定长度分块和语义分块。',why:'分块策略是 RAG 效果的关键变量。',biz:'RAG 效果不好时，首先排查的就是 Chunking 策略。',useCases:['长文档入库前的预处理','法律条文的分段检索','知识库的精细化索引'],related:['RAG','Embedding','Vector Database'],examples:['一份 50 页合同，按段落分成 200 个 Chunk。']},
+{id:'semantic-search',name:'Semantic Search',aliases:['语义搜索','语义检索'],category:'RAG与知识库',tags:['知识库','搜索技术'],difficulty:'进阶',en:'Semantic Search',one:'Semantic Search 是按"意思"搜索而不是按"关键词"搜索的技术。',plain:'传统搜索是精确匹配关键词，语义搜索是理解你"想找什么"。搜"便宜的手机"能找到"高性价比智能手机"。',tech:'Semantic Search 基于 Embedding 向量相似度进行检索。',why:'语义搜索让搜索更智能。',biz:'客户想要"比搜索框更聪明的搜索"，语义搜索就是核心能力。',useCases:['智能文档检索','知识库问答','商品推荐搜索'],related:['RAG','Embedding','Vector Database'],examples:['搜"如何办理退款"能找到"退货与退款流程"的文档。']},
+{id:'re-ranking',name:'Re-ranking',aliases:['重排','结果重排'],category:'RAG与知识库',tags:['知识库','搜索优化'],difficulty:'专业',en:'Re-ranking',one:'Re-ranking 是对初步检索结果进行二次排序，提高最终结果的相关性。',plain:'先粗筛再精选。向量检索找出可能相关的 100 条，Re-ranking 再精选出最相关的 5 条。',tech:'Re-ranking 使用交叉编码器对检索结果进行精细化相关性打分和重排序。',why:'Re-ranking 是 RAG 效果优化的关键环节。',biz:'RAG 方案效果不理想时，加一层 Re-ranking 通常是最有效的优化。',useCases:['RAG 检索结果优化','搜索结果精排','推荐系统二次排序'],related:['RAG','Semantic Search'],examples:['向量检索 50 条，Re-ranking 精排取 Top 5，准确率从 70% 提升到 90%。']},
+{id:'faiss',name:'FAISS',aliases:[],category:'RAG与知识库',tags:['知识库','开源工具'],difficulty:'专业',en:'Facebook AI Similarity Search',one:'FAISS 是 Meta 开源的高效向量检索库，适合本地快速部署。',plain:'FAISS 是免费的向量搜索工具，适合数据量不太大、想本地部署的场景。',tech:'FAISS 支持多种索引类型和 GPU 加速，适合百万到亿级向量检索。',why:'FAISS 是最流行的开源向量检索方案。',biz:'客户做 POC 或小规模 RAG 时，FAISS 是最简单的起步方案。',useCases:['本地 RAG 原型','中小规模向量检索','研发阶段的快速验证'],related:['Vector Database','Milvus','RAG'],examples:['一个团队用 FAISS+Python 搭建内部文档搜索，一周上线。']},
+{id:'milvus',name:'Milvus',aliases:[],category:'RAG与知识库',tags:['知识库','开源工具'],difficulty:'专业',one:'Milvus 是开源的云原生向量数据库，适合大规模企业级 RAG 部署。',plain:'如果 FAISS 是"小作坊"，Milvus 就是"大工厂"。能处理亿级向量数据。',tech:'Milvus 支持亿级向量检索、多种索引类型和云原生架构。',why:'Milvus 是国内最流行的开源向量数据库。',biz:'客户需要大规模向量检索方案时，Milvus 是首选开源方案。',useCases:['亿级文档向量检索','分布式知识库','高并发搜索服务'],related:['Vector Database','FAISS','RAG'],examples:['一家银行用 Milvus 存储千万级合同向量。']},
+{id:'prompt',name:'Prompt',aliases:['提示词','提示'],category:'Prompt工程',tags:['Prompt','基础概念'],difficulty:'新手',en:'Prompt',one:'Prompt 是你给 AI 的指令，决定 AI 怎么理解和回答你的问题。',plain:'Prompt 就是你跟 AI 说话的方式。同一个问题，不同的问法会得到完全不同的答案。',tech:'Prompt 是输入给 LLM 的文本指令，包括系统提示、用户输入和上下文信息。',why:'好的 Prompt 能让同样的模型输出质量提升数倍。',biz:'AI 效果不好，往往不是模型的问题，而是 Prompt 没写好。',useCases:['定义 AI 的角色和行为','引导 AI 按指定格式输出','约束 AI 的回答范围'],related:['System Prompt','Few-shot','Chain of Thought'],examples:['把"写个方案"改成"你是一位资深咨询顾问，请写一份面向金融行业的 AI 解决方案"——效果天差地别。']},
+{id:'system-prompt',name:'System Prompt',aliases:['系统提示词','系统指令'],category:'Prompt工程',tags:['Prompt','基础概念'],difficulty:'新手',en:'System Prompt',one:'System Prompt 是给 AI 设定"人设和规则"的指令。',plain:'System Prompt 就像给新员工发的岗位说明书——你是什么角色、能做什么、不能做什么。',tech:'System Prompt 是 LLM 对话中的系统级指令，优先级最高，用于设定模型角色和行为约束。',why:'System Prompt 是控制 AI 行为的核心手段。',biz:'客户说"AI 回答太随意"，通常需要优化 System Prompt。',useCases:['设定 AI 的角色和语气','约束 AI 只回答特定领域','定义输出格式和长度'],related:['Prompt','User Prompt','Context Engineering'],examples:['"你是一位专业的法律顾问，只回答中国法律相关问题。"']},
+{id:'few-shot',name:'Few-shot',aliases:['少样本学习','示例学习'],category:'Prompt工程',tags:['Prompt','技术方法'],difficulty:'进阶',en:'Few-shot Learning',one:'Few-shot 是在 Prompt 里给 AI 几个例子，让它照着做的技巧。',plain:'与其跟 AI 解释半天，不如直接给它看几个例子。就像教小朋友写字，先给范本。',tech:'Few-shot 是在 Prompt 中包含少量示例，通过 In-context Learning 引导模型按示例模式输出。',why:'Few-shot 是最实用的 Prompt 优化技巧之一。',biz:'客户要 AI 按特定格式输出，Few-shot 是最简单有效的方法。',useCases:['按模板生成文档','按特定风格写作','按格式输出结构化数据'],related:['Prompt','Zero-shot','Chain of Thought'],examples:['给 AI 看 3 个"客户回访摘要"示例，它就能按同样格式生成新的。']},
+{id:'chain-of-thought',name:'Chain of Thought',aliases:['思维链','CoT'],category:'Prompt工程',tags:['Prompt','技术方法'],difficulty:'进阶',en:'Chain of Thought',one:'Chain of Thought 是让 AI 一步步推理而不是直接给答案的技术。',plain:'让 AI "把思考过程写出来"，就像让学生"写解题步骤"。一步步推理，答案更准。',tech:'Chain of Thought 是一种 Prompt 策略，通过要求模型展示中间推理步骤来提升准确性。',why:'CoT 是提升 LLM 推理能力最有效的方法之一。',biz:'客户要 AI 做复杂分析时，用 CoT 让 AI 展示推理过程，答案更可靠。',useCases:['复杂问题分解','数学和逻辑推理','多步骤决策分析'],related:['Prompt','Reasoning Model','ReAct'],examples:['问"这个客户该给几折？"，用 CoT 先分析客户等级→消费历史→推荐折扣。']},
+{id:'react',name:'ReAct',aliases:['推理+行动'],category:'Prompt工程',tags:['Prompt','Agent'],difficulty:'进阶',en:'Reasoning + Acting',one:'ReAct 是让 AI 交替推理和行动的方法，想一步做一步。',plain:'ReAct 就是"边想边干"：先想该做什么→做一个动作→看结果→再想下一步。',tech:'ReAct 结合推理和行动，让 LLM 交替生成思考和行动。',why:'ReAct 是 Agent 的核心推理范式。',biz:'客户说"让 AI 边想边做"就是这个。',useCases:['Agent 自动化任务执行','多步骤信息检索','复杂问题分解与执行'],related:['Agent','Agent Loop','Chain of Thought'],examples:['研究 Agent：想"我需要查 X"→搜索 X→想"还需要 Y"→搜索 Y→综合回答。']},
+{id:'structured-output',name:'Structured Output',aliases:['结构化输出','JSON输出'],category:'Prompt工程',tags:['Prompt','技术方法'],difficulty:'进阶',en:'Structured Output',one:'Structured Output 是让 AI 按指定格式（如 JSON）输出结果，方便程序直接使用。',plain:'AI 默认输出一大段文字，Structured Output 让它输出结构化数据，下游程序可以直接解析。',tech:'Structured Output 通过 JSON Schema、Function Calling 等技术让 LLM 输出符合预定义结构的数据。',why:'Structured Output 是 AI 与软件系统集成的关键桥梁。',biz:'客户要把 AI 输出接入业务系统，Structured Output 是必须的。',useCases:['AI 输出填充表单','AI 生成 API 请求参数','AI 输出存入数据库'],related:['JSON Schema','Function Calling','Prompt'],examples:['AI 分析客户需求后输出 JSON：{"intent":"退款","urgency":"高"}']},
+{id:'context-engineering',name:'Context Engineering',aliases:['上下文工程'],category:'Prompt工程',tags:['Prompt','前沿概念'],difficulty:'专业',en:'Context Engineering',one:'Context Engineering 是精心设计 AI 输入上下文的技术，是 Prompt Engineering 的升级版。',plain:'Prompt Engineering 只关注"怎么写提示词"，Context Engineering 还关注"给 AI 喂什么信息"。',tech:'Context Engineering 是对 LLM 输入的全面管理，包括 System Prompt 设计、RAG 检索策略等。',why:'随着 AI 应用复杂度提升，需要系统性管理 AI 的整个上下文输入。',biz:'AI 效果不好，问题往往不在 Prompt，而在上下文——该给的信息没给到位。',useCases:['复杂 Agent 的输入设计','RAG 系统的上下文优化','多工具调用的信息整合'],related:['Prompt','System Prompt','RAG','Agent'],examples:['销售 Agent 的上下文：角色设定+客户资料+历史对话+产品信息+输出格式。']},
+{id:'mcp',name:'MCP',aliases:['Model Context Protocol','模型上下文协议'],category:'MCP与工具调用',tags:['MCP','协议','工具调用'],difficulty:'进阶',en:'Model Context Protocol',one:'MCP 是 Anthropic 提出的开放协议，让 AI 能统一对接各种工具和数据源。',plain:'以前每个 AI 工具都要单独写接口对接，MCP 像一个"万能转接头"——只要工具支持 MCP，AI 就能直接用。',tech:'MCP 定义了 AI 模型与外部工具/数据源之间的通信规范，包括 MCP Server 和 MCP Client。',why:'MCP 统一了 AI 工具调用的接口标准。',biz:'客户问"AI 怎么对接我们的系统"，MCP 提供了标准化的对接方案。',useCases:['AI 对接企业内部系统','统一管理多个工具接口','AI 应用即插即用集成'],related:['MCP Server','MCP Client','Function Calling','API'],examples:['AI 助手通过 MCP 同时对接了 GitHub、Slack 和数据库。']},
+{id:'mcp-server',name:'MCP Server',aliases:['MCP服务端'],category:'MCP与工具调用',tags:['MCP','开发工具'],difficulty:'专业',en:'MCP Server',one:'MCP Server 是按照 MCP 协议封装的工具服务端，对外暴露能力给 AI 调用。',plain:'MCP Server 就是"工具端"——把你的数据库、API 等封装成 MCP 格式，AI 就能直接调用。',tech:'MCP Server 按 MCP 协议实现工具注册、请求处理和响应返回。',why:'MCP Server 是 AI 工具生态的基础。',biz:'客户想让 AI 调用自己的系统，开发一个 MCP Server 是最标准化的方式。',useCases:['封装企业内部 API','数据库查询 MCP Server','文件系统访问 MCP Server'],related:['MCP','MCP Client','API'],examples:['把 CRM 系统封装成 MCP Server，AI 就能直接查询客户信息。']},
+{id:'mcp-client',name:'MCP Client',aliases:['MCP客户端'],category:'MCP与工具调用',tags:['MCP','开发工具'],difficulty:'专业',en:'MCP Client',one:'MCP Client 是 AI 应用中对接 MCP Server 的客户端。',plain:'MCP Client 是"AI 这边"的接口——AI 应用通过 Client 连接各种 MCP Server。',tech:'MCP Client 集成在 AI 应用中，负责发现、连接和调用 MCP Server。',why:'MCP Client 是 AI 应用接入 MCP 生态的入口。',biz:'选择 AI 平台时，是否内置 MCP Client 决定了能否快速接入工具生态。',useCases:['AI IDE 对接 MCP 工具','AI Agent 调用外部服务'],related:['MCP','MCP Server','Tool Calling'],examples:['Claude Desktop 内置 MCP Client，可连接各种 MCP Server。']},
+{id:'function-calling',name:'Function Calling',aliases:['函数调用'],category:'MCP与工具调用',tags:['工具调用','核心技术'],difficulty:'进阶',en:'Function Calling',one:'Function Calling 是让 AI 调用预定义函数的能力，是 AI 与系统对接的基础。',plain:'你告诉 AI "你可以调用这些函数"，AI 就会在需要时自动调用。比如定义了"查天气"函数，AI 遇到天气问题会自动调用。',tech:'LLM 生成结构化函数调用参数，由应用层执行实际调用。',why:'Function Calling 是 AI 应用从"对话"走向"行动"的基础能力。',biz:'客户要让 AI "真正干活"而不是"只会聊天"，就需要 Function Calling。',useCases:['AI 调用企业 API','AI 查询数据库','AI 执行系统操作'],related:['Tool Calling','MCP','API','Agent'],examples:['用户问"今天北京天气？"，AI 调用天气 API 返回真实数据。']},
+{id:'tool-calling',name:'Tool Calling',aliases:['工具调用'],category:'MCP与工具调用',tags:['工具调用','核心概念'],difficulty:'进阶',en:'Tool Calling',one:'Tool Calling 是 AI 调用外部工具执行操作的统称。',plain:'Tool Calling 和 Function Calling 本质一样，只是叫法不同。Tool Calling 是更通用的术语。',tech:'Tool Calling 是 LLM 调用外部工具的统称，包括 Function Calling、MCP 等多种实现。',why:'Tool Calling 是 Agent 执行任务的核心机制。',biz:'客户想让 AI 对接各种系统，Tool Calling 是核心概念。',useCases:['AI 调用搜索工具','AI 执行代码','AI 操作外部系统'],related:['Function Calling','MCP','Agent','API'],examples:['一个 Agent 同时使用了搜索、计算器和翻译工具。']},
+{id:'a2a',name:'A2A',aliases:['Agent to Agent'],category:'MCP与工具调用',tags:['Agent','协议'],difficulty:'专业',en:'Agent-to-Agent Protocol',one:'A2A 是让不同 Agent 之间互相通信和协作的协议。',plain:'MCP 解决"AI 对接工具"，A2A 解决"AI 和 AI 之间怎么协作"。让不同厂商的 Agent 能互相对话。',tech:'A2A 定义了 Agent 之间的通信规范，支持异构 Agent 系统的互操作。',why:'A2A 是 Multi-Agent 系统走向开放生态的关键协议。',biz:'客户有多套 AI 系统需要互相配合时，A2A 提供了标准化的协作方案。',useCases:['跨平台 Agent 协作','企业内多系统 Agent 互通'],related:['Agent','MCP','Multi-Agent'],examples:['Google 提出的 A2A 协议让不同厂商的 Agent 可以互相发现和调用。']},
+{id:'computer-use',name:'Computer Use',aliases:['计算机操作','桌面操作'],category:'MCP与工具调用',tags:['工具调用','Agent'],difficulty:'进阶',en:'Computer Use',one:'Computer Use 是让 AI 像人一样操作电脑（点击、输入、拖拽）的能力。',plain:'以前 AI 只能通过 API 间接操作软件，Computer Use 让 AI 能直接看到屏幕、点击按钮。',tech:'Computer Use 通过屏幕截图理解界面，生成鼠标和键盘操作指令。',why:'Computer Use 让 AI 能操作没有 API 的传统软件。',biz:'客户有大量传统软件没有 API，Computer Use 是可行的自动化方案。',useCases:['自动化操作传统 ERP 系统','批量处理桌面应用任务'],related:['Browser Use','Agent','Tool Calling'],examples:['Claude 的 Computer Use 可以看到屏幕、点击按钮、填写表单。']},
+{id:'browser-use',name:'Browser Use',aliases:['浏览器操作','网页自动化'],category:'MCP与工具调用',tags:['工具调用','Agent'],difficulty:'进阶',en:'Browser Use',one:'Browser Use 是让 AI 像人一样浏览网页、点击、填表的能力。',plain:'Browser Use 是 Computer Use 的"网页版"——AI 能打开浏览器、搜索信息、填写表单。',tech:'Browser Use 通过操控浏览器实现网页导航和交互。',why:'Browser Use 让 AI 能自动化完成大量网页操作任务。',biz:'客户需要 AI 自动采集网页数据时，Browser Use 是核心技术。',useCases:['自动采集竞品价格','自动填写网页表单','自动登录系统获取数据'],related:['Computer Use','Agent','Tool Calling'],examples:['一个 Agent 通过 Browser Use 自动登录供应商网站下载报价单。']},
+{id:'cursor',name:'Cursor',aliases:[],category:'AI开发工具',tags:['开发工具','IDE'],difficulty:'新手',one:'Cursor 是目前最火的 AI 编程编辑器，让写代码像聊天一样简单。',plain:'Cursor 是基于 VS Code 改造的 AI 编辑器，你可以在里面跟 AI 对话写代码、自动补全。',tech:'Cursor 集成了 GPT-4/Claude 等模型，支持代码补全、对话式编辑和多文件修改。',why:'Cursor 代表了 AI 编程工具的主流形态。',biz:'客户想要提升开发团队效率，Cursor 是目前最推荐的 AI 编程工具。',useCases:['AI 辅助编写代码','自动补全和重构','Bug 修复和代码解释'],related:['IDE','VS Code','Windsurf','Trae'],examples:['一个开发者用 Cursor 一句话生成一个完整的 React 组件。']},
+{id:'trae',name:'Trae',aliases:[],category:'AI开发工具',tags:['开发工具','IDE'],difficulty:'新手',one:'Trae 是字节跳动推出的 AI IDE，免费使用，内置国产模型。',plain:'字节对标 Cursor 做的 AI 编程工具，免费，内置豆包等国产模型。不用翻墙就能用。',tech:'Trae 基于 VS Code 架构，内置豆包/DeepSeek 等模型。',why:'Trae 为国内开发者提供了无需翻墙的 AI 编程工具选择。',biz:'客户在国内环境下需要 AI 编程工具，Trae 是 Cursor 的国产替代。',useCases:['国内环境 AI 编程','使用国产模型写代码','免费 AI 辅助开发'],related:['Cursor','IDE','豆包','VS Code'],examples:['一个国内开发者用 Trae+DeepSeek 免费 Cursor 付费版功能。']},
+{id:'claude-code',name:'Claude Code',aliases:[],category:'AI开发工具',tags:['开发工具','CLI'],difficulty:'专业',one:'Claude Code 是 Anthropic 推出的命令行 AI 编程工具。',plain:'Claude Code 不像 Cursor 有图形界面，它在终端里运行。适合高级开发者。',tech:'Claude Code 运行在终端中，支持理解代码库、编辑文件和运行命令。',why:'Claude Code 代表了 AI 编程的另一种范式——终端 Agent。',biz:'高级开发团队需要更强大的 AI 编程 Agent 时，Claude Code 是专业选择。',useCases:['大型代码库理解和修改','自动化重构','终端环境 AI 编程'],related:['Cursor','OpenAI Codex','Agent'],examples:['一个架构师用 Claude Code 重构整个微服务项目的依赖关系。']},
+{id:'github-copilot',name:'GitHub Copilot',aliases:['Copilot'],category:'AI开发工具',tags:['开发工具','IDE'],difficulty:'新手',one:'GitHub Copilot 是微软/GitHub 推出的 AI 编程助手，最早的 AI 编程工具之一。',plain:'AI 写代码的鼻祖产品，集成在 VS Code 中。你写注释，它补全代码。',tech:'GitHub Copilot 基于 OpenAI Codex，支持代码补全和 Chat 对话。',why:'Copilot 是 AI 编程工具的开创者。',biz:'已在用 GitHub 的企业客户，Copilot 是最自然的选择。',useCases:['VS Code 代码补全','GitHub PR 自动审查','企业级 AI 编程助手'],related:['Cursor','IDE','VS Code','OpenAI'],examples:['微软内部数据显示使用 Copilot 的开发者效率提升 55%。']},
+{id:'windsurf',name:'Windsurf',aliases:['Codeium Windsurf'],category:'AI开发工具',tags:['开发工具','IDE'],difficulty:'新手',one:'Windsurf 是 Codeium 推出的 AI IDE，主打 Cascade 多步骤编程能力。',plain:'Cursor 的竞争者，特色是 Cascade——AI 可以连续多步骤修改代码。',tech:'Windsurf 的 Cascade 支持 Agent 式的多步骤代码修改。',why:'Windsurf 提供了 Cursor 之外的另一种 AI IDE 选择。',biz:'客户评估 AI IDE 时，Windsurf 是 Cursor 的重要对比选项。',useCases:['多步骤代码修改','跨文件重构','AI 辅助全栈开发'],related:['Cursor','IDE','VS Code'],examples:['一个开发者用 Windsurf Cascade 一口气修改了前后端 10 个文件。']},
+{id:'bolt',name:'Bolt',aliases:['Bolt.new'],category:'AI开发工具',tags:['开发工具','AI生成'],difficulty:'新手',one:'Bolt 是一个 AI 全栈开发平台，用对话就能生成完整 Web 应用。',plain:'不需要会写代码，用 Bolt 对话就能做出一个网站。从零到上线一条龙。',tech:'Bolt.new 支持 AI 生成完整 Web 应用，内置 WebContainer 运行时。',why:'Bolt 代表了"零代码 AI 开发"的方向。',biz:'客户想快速做产品原型，Bolt 是最快的方案之一。',useCases:['快速构建产品原型','非技术人员开发简单应用'],related:['V0','Lovable','Replit','Cursor'],examples:['一个产品经理用 Bolt 30 分钟生成了完整的待办事项 Web 应用。']},
+{id:'v0',name:'V0',aliases:['v0.dev'],category:'AI开发工具',tags:['开发工具','AI生成'],difficulty:'新手',one:'V0 是 Vercel 推出的 AI UI 生成工具，用对话生成前端界面代码。',plain:'跟 V0 说"做一个登录页面"，它直接生成 React+Tailwind 代码，还能实时预览。',tech:'V0 通过对话生成 React+Tailwind+shadcn/ui 组件代码。',why:'V0 大幅降低了前端 UI 开发门槛。',biz:'客户需要快速出 UI 原型，V0 是最高效的前端生成工具。',useCases:['快速生成 UI 原型','前端组件代码生成'],related:['Bolt','Lovable','Cursor'],examples:['一个设计师用 V0 生成了一套完整的管理后台 UI。']},
+{id:'devin',name:'Devin',aliases:[],category:'AI开发工具',tags:['开发工具','AI程序员'],difficulty:'进阶',one:'Devin 是"AI 软件工程师"，能独立完成完整的开发任务。',plain:'Devin 不只是辅助写代码，它有自己的终端、浏览器、编辑器，能独立理解需求、写代码、测试。',tech:'Devin 具备独立的计算环境，能端到端完成软件开发任务。',why:'Devin 代表了 AI 从"辅助工具"到"独立开发者"的演进方向。',biz:'客户想要 AI 完全代替开发者做简单任务时，Devin 是最接近的产品。',useCases:['独立完成小型开发任务','Bug 修复和代码迁移'],related:['Cursor','Claude Code','Agent'],examples:['Devin 在 SWE-bench 中能独立解决部分真实 GitHub Issue。']},
+{id:'workflow',name:'Workflow',aliases:['工作流','AI工作流'],category:'AI工作流与应用平台',tags:['工作流','核心概念'],difficulty:'新手',en:'Workflow',one:'Workflow 是把多个 AI 步骤按流程串起来，自动完成复杂任务。',plain:'Workflow 就像流水线——第一步查数据，第二步分析，第三步写报告，第四步发邮件。',tech:'Workflow 是对 AI 任务流的编排，将多个步骤按 DAG 或状态机方式组织。',why:'Workflow 是 AI 从"单次对话"到"自动化流程"的关键。',biz:'客户说"想让 AI 自动跑一套流程"，Workflow 就是实现方式。',useCases:['自动生成周报','客户投诉自动处理流程','数据采集→分析→报告全链路'],related:['Agent','Coze','Dify'],examples:['每天早上自动采集行业新闻→AI 分析摘要→发送到企业微信群。']},
+{id:'coze',name:'Coze',aliases:['扣子'],category:'AI工作流与应用平台',tags:['工作流','平台','字节跳动'],difficulty:'新手',one:'Coze 是字节跳动推出的 AI 应用搭建平台，零代码搭建 AI Bot 和工作流。',plain:'在 Coze 上不用写代码就能搭建 AI 应用：拖拽式设计工作流、配置知识库。',tech:'Coze 支持 Workflow 编排、知识库接入、Plugin 扩展和多渠道发布。',why:'Coze 降低了 AI 应用开发门槛。',biz:'客户想快速搭建 AI 应用又没有开发团队，Coze 是最优选择。',useCases:['零代码搭建智能客服','创建企业知识库问答 Bot','设计自动化工作流'],related:['Workflow','Dify','豆包'],examples:['一家中小企业用 Coze 一天搭建了智能客服 Bot。']},
+{id:'dify',name:'Dify',aliases:[],category:'AI工作流与应用平台',tags:['工作流','平台','开源'],difficulty:'进阶',one:'Dify 是开源的 AI 应用开发平台，适合有技术团队的私有化部署。',plain:'Dify 和 Coze 类似，但开源，可以自己部署。适合对数据安全有要求的企业。',tech:'Dify 支持 Workflow 编排、RAG 管道、Agent 模式和多模型切换，可私有化部署。',why:'Dify 是开源 AI 应用平台的最热门选择。',biz:'客户要求数据不出公司、私有化部署，Dify 是首选开源方案。',useCases:['私有化部署 AI 应用','企业级 RAG 知识库','多模型统一管理'],related:['Coze','Workflow','RAG'],examples:['一家金融机构用 Dify 私有化部署了内部 AI 助手。']},
+{id:'n8n',name:'n8n',aliases:[],category:'AI工作流与应用平台',tags:['工作流','自动化','开源'],difficulty:'进阶',one:'n8n 是开源的工作流自动化工具，支持 AI 节点和 400+ 应用集成。',plain:'n8n 是一个"连线工具"——把各种软件和 AI 用线连起来，让数据自动流转。',tech:'n8n 支持可视化节点编排、AI Agent 节点和 400+ 第三方应用集成。',why:'n8n 桥接了 AI 和传统软件。',biz:'客户想要"AI + 现有系统"的自动化方案，n8n 是连接层的好选择。',useCases:['跨系统数据同步','AI 增强的业务流程自动化','多应用集成编排'],related:['Workflow','Dify','Make','Zapier'],examples:['收到客户邮件→AI 分类→自动创建工单→通知销售。']},
+{id:'agentic-workflow',name:'Agentic Workflow',aliases:['智能体工作流'],category:'AI工作流与应用平台',tags:['工作流','Agent'],difficulty:'进阶',en:'Agentic Workflow',one:'Agentic Workflow 是让 AI Agent 自主决策和执行的工作流。',plain:'传统 Workflow 每一步都写死，Agentic Workflow 让 AI 自己决定走哪步、用什么工具。',tech:'Agentic Workflow 在传统 Workflow 基础上引入 Agent 自主决策能力。',why:'Agentic Workflow 兼具 Workflow 的可控性和 Agent 的灵活性。',biz:'客户流程太复杂、分支太多，Agentic Workflow 让 AI 自主处理。',useCases:['复杂的客户服务流程','动态选择工具的自动化任务'],related:['Workflow','Agent','Agent Harness'],examples:['AI 分析客户投诉→自主决定走退款/换货/升级流程。']},
+{id:'openai-api',name:'OpenAI API',aliases:[],category:'模型部署与API',tags:['API','云服务'],difficulty:'进阶',one:'OpenAI API 是调用 GPT 系列模型的官方接口。',plain:'想让你的产品用上 ChatGPT 的能力，就通过 OpenAI API 来调用。按 Token 付费。',tech:'OpenAI API 提供 Chat Completions、Embeddings 等接口。',why:'OpenAI API 是全球使用最广泛的 AI API。',biz:'客户想接入 GPT 模型，需注意国内访问合规性。',useCases:['企业 AI 应用接入 GPT 模型','聊天机器人开发','内容生成自动化'],related:['API','OpenAI','LLM','Token'],examples:['一家 SaaS 公司通过 OpenAI API 为产品增加了 AI 写作功能。']},
+{id:'azure-openai',name:'Azure OpenAI',aliases:[],category:'模型部署与API',tags:['API','云服务','企业级'],difficulty:'进阶',one:'Azure OpenAI 是微软云上的 OpenAI 服务，企业级合规和数据隐私保障。',plain:'和 OpenAI API 功能一样，但跑在微软 Azure 上。对大企业来说数据不经过 OpenAI，合规性更好。',tech:'Azure OpenAI 提供企业级 SLA 和合规认证。',why:'Azure OpenAI 解决了企业使用 OpenAI 模型的合规顾虑。',biz:'大客户、金融、政府等合规场景，Azure OpenAI 是唯一合规的 GPT 接入方式。',useCases:['金融行业 AI 应用','政府合规场景','企业级 AI 服务'],related:['OpenAI API','API','Vertex AI'],examples:['一家银行通过 Azure OpenAI 部署了合规的智能客服。']},
+{id:'ollama',name:'Ollama',aliases:[],category:'模型部署与API',tags:['部署工具','开源'],difficulty:'进阶',one:'Ollama 是本地运行大模型的最简单方案，一行命令就能跑。',plain:'想在自己电脑上跑大模型？装个 Ollama，一行命令就搞定。',tech:'Ollama 支持一键下载和运行 Qwen、Llama 等开源模型。',why:'Ollama 把本地大模型部署门槛降到了最低。',biz:'客户想快速验证本地大模型效果，Ollama 是最快的起步方案。',useCases:['本地大模型测试','离线环境 AI 应用','开发环境模型调试'],related:['LM Studio','vLLM','DeepSeek','Qwen'],examples:['一行命令 ollama run qwen2.5 就能在笔记本上跑通千问模型。']},
+{id:'vllm',name:'vLLM',aliases:[],category:'模型部署与API',tags:['部署工具','开源','推理优化'],difficulty:'专业',one:'vLLM 是高性能的大模型推理引擎，让模型跑得更快、服务更多用户。',plain:'同样一个大模型，用 vLLM 部署比普通方式快几倍。是生产环境部署大模型的标准选择。',tech:'vLLM 采用 PagedAttention 技术优化显存管理，支持连续批处理。',why:'vLLM 是生产环境部署开源大模型的事实标准。',biz:'客户要私有化部署大模型且对性能有要求，vLLM 是必选的推理引擎。',useCases:['生产环境大模型部署','高并发推理服务','GPU 集群优化'],related:['Ollama','TGI','Inference'],examples:['一家公司用 vLLM 部署 Qwen-72B，吞吐量提升 3 倍。']},
+{id:'lm-studio',name:'LM Studio',aliases:[],category:'模型部署与API',tags:['部署工具','桌面应用'],difficulty:'新手',one:'LM Studio 是带图形界面的本地大模型运行工具。',plain:'Ollama 要打命令，LM Studio 有图形界面——点几下就能下载和运行大模型。',tech:'LM Studio 提供可视化模型管理和本地 API 服务。',why:'LM Studio 让非技术人员也能在本地运行大模型。',biz:'客户想在本地体验大模型但不会用命令行，推荐 LM Studio。',useCases:['本地大模型体验','模型效果评估','离线 AI 助手'],related:['Ollama','vLLM','DeepSeek'],examples:['一个产品经理用 LM Studio 在 Mac 上离线体验 AI 对话。']},
+{id:'ai-copilot',name:'AI Copilot',aliases:['AI副驾驶','AI助手'],category:'AI商业应用',tags:['商业应用','产品形态'],difficulty:'新手',en:'AI Copilot',one:'AI Copilot 是嵌入业务流程中的 AI 助手，辅助人类更高效地完成工作。',plain:'Copilot 不是替代人，而是"副驾驶"——帮你干活但最终决定权在你。',tech:'AI Copilot 通过上下文感知和工具调用提供实时建议和自动化操作。',why:'Copilot 是目前 AI 商业化最成功的形态。',biz:'客户说"想让 AI 帮员工提效"，Copilot 模式比全自动 Agent 更容易被接受。',useCases:['办公场景 AI 辅助','开发场景代码补全','销售场景话术建议'],related:['Agent','AI SaaS','Digital Worker'],examples:['微软 365 Copilot 在 Word、Excel、Teams 中辅助办公。']},
+{id:'ai-sdr',name:'AI SDR',aliases:['AI销售开发代表'],category:'AI商业应用',tags:['商业应用','销售'],difficulty:'进阶',en:'AI Sales Development Representative',one:'AI SDR 是用 AI 自动完成销售前期的线索筛选和客户触达。',plain:'SDR 负责找客户、筛线索。AI SDR 就是让 AI 自动做这些——自动找潜在客户、发邮件、跟进。',tech:'AI SDR 通过 Agent 自动执行线索筛选、个性化邮件撰写和多渠道触达。',why:'AI SDR 是 AI 在销售领域最直接的商业应用。',biz:'客户想"让 AI 帮销售团队找客户"，AI SDR 就是解决方案。',useCases:['自动筛选潜在客户','个性化邮件触达','销售线索自动跟进'],related:['Sales Agent','Agent'],examples:['一家 SaaS 公司用 AI SDR 每月触达 5000 潜在客户，转化率提升 30%。']},
+{id:'sales-agent',name:'Sales Agent',aliases:['销售Agent','AI销售'],category:'AI商业应用',tags:['商业应用','销售','Agent'],difficulty:'进阶',en:'Sales Agent',one:'Sales Agent 是 AI 驱动的销售助手，能自动完成从线索到成交的全流程。',plain:'比 AI SDR 更进一步，Sales Agent 不只找客户，还能谈客户。',tech:'Sales Agent 集成 CRM、知识库和沟通工具，能自主执行完整销售流程。',why:'Sales Agent 代表了 AI 在销售领域的终极形态。',biz:'客户说"想要 AI 替代销售团队"，Sales Agent 方向是对的。',useCases:['自动跟进销售线索','AI 主持产品演示','自动生成报价和合同'],related:['AI SDR','Agent'],examples:['一家公司用 Sales Agent 自动处理 60% 的标准化客户咨询。']},
+{id:'customer-service-agent',name:'Customer Service Agent',aliases:['客服Agent','AI客服'],category:'AI商业应用',tags:['商业应用','客服','Agent'],difficulty:'新手',en:'Customer Service Agent',one:'Customer Service Agent 是能自主处理客户问题的 AI 客服。',plain:'不是"按1按2"的笨客服，而是能理解问题、查知识库、操作系统的 AI。',tech:'Customer Service Agent 结合 RAG、CRM 和工作流，能自主解决问题。',why:'客服是 AI Agent 最成熟的商业场景之一。',biz:'客户说"客服成本太高"，AI 客服 Agent 是最直接的解决方案。',useCases:['电商自动退换货','银行账户查询和操作','SaaS 产品技术支持'],related:['Agent','RAG','Knowledge Base'],examples:['一家电商的 AI 客服自动处理了 85% 的退换货请求。']},
+{id:'knowledge-base',name:'Knowledge Base',aliases:['知识库','AI知识库'],category:'AI商业应用',tags:['商业应用','知识库'],difficulty:'新手',en:'Knowledge Base',one:'Knowledge Base 是 AI 知识库，存储企业知识供 AI 检索和回答问题。',plain:'把企业的产品文档、FAQ 丢进知识库，AI 就能基于这些内容回答问题。相当于给 AI 一本"参考书"。',tech:'AI Knowledge Base 通常基于 RAG 架构，将文档 Embedding 后存入向量数据库。',why:'知识库是企业 AI 应用最基础也最重要的组件。',biz:'客户说"想让 AI 懂我们的业务"，第一步就是建知识库。',useCases:['产品知识库问答','内部培训资料检索','合规文档查询'],related:['RAG','Embedding','Vector Database'],examples:['一家医疗公司把 5000 份临床指南建成知识库。']},
+{id:'enterprise-agent',name:'Enterprise Agent',aliases:['企业Agent','企业智能体'],category:'AI商业应用',tags:['商业应用','企业级'],difficulty:'进阶',en:'Enterprise Agent',one:'Enterprise Agent 是面向企业场景的 AI Agent，对接企业系统执行业务任务。',plain:'普通 Agent 是"通才"，Enterprise Agent 是"企业员工"——它了解企业业务、能操作企业系统。',tech:'Enterprise Agent 通过 API/MCP 对接 ERP、CRM、OA 等系统。',why:'Enterprise Agent 是 AI 在企业级场景的终极形态。',biz:'大客户要做"AI+业务系统深度融合"，Enterprise Agent 就是目标架构。',useCases:['企业 IT 运维自动化','HR 流程自动化','财务审核自动化'],related:['Agent','MCP','Digital Worker'],examples:['一家企业的 Agent 自动处理采购审批：查库存→比价→生成采购单→提交审批。']},
+{id:'ai-native',name:'AI Native',aliases:['AI原生','AI原生应用'],category:'AI商业应用',tags:['商业应用','产品理念'],difficulty:'进阶',en:'AI Native',one:'AI Native 是从零开始围绕 AI 能力设计的产品，而不是在旧产品上"加 AI"。',plain:'传统软件"加个 AI 功能"和"从零用 AI 重做"是两回事。AI Native 是后者。',tech:'AI Native 产品设计以 AI 为核心驱动，交互和数据流都围绕 AI 构建。',why:'AI Native 代表了产品设计的范式转变。',biz:'客户问"怎么用 AI 改造产品"，要区分"加功能"和"AI Native 重做"。',useCases:['AI Native 客服产品','AI Native 办公工具','AI Native 数据分析平台'],related:['AI SaaS','Vertical AI','Agent'],examples:['Perplexity 是 AI Native 的搜索引擎。']},
+{id:'ai-wrapper',name:'AI Wrapper',aliases:['套壳AI','AI套壳'],category:'AI商业应用',tags:['商业应用','产品形态'],difficulty:'新手',en:'AI Wrapper',one:'AI Wrapper 是简单封装大模型 API 的应用，核心能力依赖底层模型。',plain:'AI Wrapper 就是"套壳"——在 ChatGPT API 外面包一层界面。做起来很快，但护城河很浅。',tech:'AI Wrapper 产品核心逻辑仅是 LLM API 调用+Prompt 封装，缺乏自有数据或深度逻辑。',why:'理解 AI Wrapper 的局限性，才能设计出有真正壁垒的 AI 产品。',biz:'客户做 AI 产品要避免只做 Wrapper——需要有数据壁垒或业务深度。',useCases:['特定场景的 AI 写作工具','行业专属的 AI 对话助手'],related:['AI Native','AI SaaS','Vertical AI'],examples:['"AI 写小红书文案"的工具如果只是 GPT API+Prompt 模板，就是 AI Wrapper。']},
+{id:'digital-worker',name:'Digital Worker',aliases:['数字员工','数字化员工'],category:'AI商业应用',tags:['商业应用','企业级'],difficulty:'进阶',en:'Digital Worker',one:'Digital Worker 是像员工一样工作的 AI 系统，能独立承担岗位职责。',plain:'数字员工不只是"工具"，而是有名字、有岗位、有考核的"员工"。',tech:'Digital Worker 具备完整岗位能力，集成知识库、工具链和业务流程。',why:'Digital Worker 是 AI 从"工具"到"员工"的认知转变。',biz:'客户说"想让 AI 替代某个岗位"，就需要构建 Digital Worker。',useCases:['数字客服替代人工客服','数字分析师自动出报告','数字运营自动执行营销活动'],related:['Enterprise Agent','Agent'],examples:['一家保险公司部署了"数字理赔员"，自动处理 80% 的简单理赔。']},
+{id:'vertical-ai',name:'Vertical AI',aliases:['垂直AI','行业AI'],category:'AI商业应用',tags:['商业应用','产品形态'],difficulty:'进阶',en:'Vertical AI',one:'Vertical AI 是专注于特定行业的 AI 解决方案，比通用 AI 更懂行业。',plain:'通用 AI 什么都能聊但什么都不精，Vertical AI 是"行业专家"。',tech:'Vertical AI 通过行业数据微调和领域知识库提供专业能力。',why:'Vertical AI 是 AI 商业化最有前景的方向。',biz:'客户在特定行业做 AI 方案，Vertical AI 思路更容易打动决策者。',useCases:['医疗 AI 诊断助手','法律 AI 合同审查','金融 AI 风控分析'],related:['AI Native','AI SaaS','Fine-tuning'],examples:['一家 Vertical AI 公司专做建筑行业，AI 能读懂工程图纸。']}
+];
+
+// ===== HELPERS =====
+const getTermsByCat=c=>terms.filter(t=>t.category===c);
+const getHot=()=>['llm','agent','mcp','rag','prompt','embedding','workflow','function-calling','cursor','coze'].map(id=>terms.find(t=>t.id===id)).filter(Boolean);
+const getRecent=()=>[...terms].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')).slice(0,6);
+const getAllTags=()=>{const s=new Set();terms.forEach(t=>t.tags.forEach(g=>s.add(g)));return[...s].sort()};
+const search=q=>{const l=q.toLowerCase().trim();if(!l)return[];return terms.filter(t=>[t.name,t.en||'',...(t.aliases||[]),t.one,t.category,...t.tags,t.plain].join(' ').toLowerCase().includes(l)).sort((a,b)=>{if(a.name.toLowerCase()===l)return-1;if(b.name.toLowerCase()===l)return 1;return 0})};
+const catSlug=c=>categories.find(x=>x.name===c)?.slug||'';
+
+// ===== ROUTER =====
+let currentView='home';
+let currentId='';
+let currentSlug='';
+let searchQuery='';
+
+function render(){
+  const app=document.getElementById('app');
+  if(currentView==='detail')app.innerHTML=renderDetail(currentId);
+  else if(currentView==='category')app.innerHTML=renderCategory(currentSlug);
+  else app.innerHTML=renderHome();
+  window.scrollTo(0,0);
+}
+
+function navigate(view,id='',slug=''){
+  currentView=view;currentId=id;currentSlug=slug;searchQuery='';render();
+}
+
+// ===== RENDER: HOME =====
+function renderHome(){
+  const hot=getHot();
+  const recent=getRecent();
+  const allTags=getAllTags();
+  return `
+  <div class="hero">
+    <h1>AI黑话<span>翻译器</span></h1>
+    <p>让AI术语不再难懂。面向学习者、产品经理、商务人员的AI知识库。</p>
+    <div class="search-wrap">
+      <svg class="icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input id="searchInput" type="text" placeholder="搜索AI术语、工具、厂商... 例如：LLM、Agent、RAG" value="${searchQuery}" onkeydown="if(event.key==='Enter')doSearch(this.value)">
+      <button onclick="doSearch(document.getElementById('searchInput').value)">搜索</button>
+    </div>
+  </div>
+  ${searchQuery?renderSearchResults(searchQuery):renderDefaultContent(hot,recent,allTags)}
+  <div class="footer">AI黑话翻译器 · 让AI术语不再难懂 · 内置 ${terms.length}+ 词条</div>`;
+}
+
+function renderSearchResults(q){
+  const results=search(q);
+  return `<div class="section">
+    <div class="filter-bar"><h2>搜索"${q}" <span style="font-weight:400;color:var(--gray-400);font-size:13px">${results.length} 个词条</span></h2><span class="clear" onclick="searchQuery='';render()">清除筛选</span></div>
+    ${results.length?`<div class="cards-grid">${results.map(t=>renderCard(t)).join('')}</div>`:'<div class="empty"><p>没有找到相关词条</p><p style="font-size:13px">试试其他关键词或分类</p></div>'}
+  </div>`;
+}
+
+function renderDefaultContent(hot,recent,allTags){
+  return `
+  <div class="section"><div class="section-title">🔥 热门术语</div><div class="hot-wrap">${hot.map(t=>`<span class="hot-item" onclick="navigate('detail','${t.id}')">🔥 ${t.name}</span>`).join('')}</div></div>
+  <div class="section"><div class="section-title">📂 分类导航</div><div class="cat-grid">${categories.map(c=>{const n=getTermsByCat(c.name).length;return`<div class="cat-item" onclick="navigate('category','','${c.slug}')"><span class="emoji">${c.icon}</span><span class="name">${c.name}</span><span class="count">${n} 词条</span></div>`}).join('')}</div></div>
+  <div class="section"><div class="section-title">🏷️ 标签筛选</div><div class="tag-wrap">${allTags.map(t=>`<span class="tag-item" onclick="doSearch('${t}')">${t}</span>`).join('')}</div></div>
+  <div class="section"><div class="section-title">✨ 最新收录</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">${recent.map(t=>`<div class="card" onclick="navigate('detail','${t.id}')" style="display:flex;align-items:center;gap:12px;padding:12px"><span style="shrink:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--primary-bg);color:var(--primary-700);border-radius:8px;font-size:12px;font-weight:700">N</span><div style="min-width:0"><div style="font-size:13px;font-weight:500;color:var(--gray-900)">${t.name}</div><div style="font-size:11px;color:var(--gray-400);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.one}</div></div></div>`).join('')}</div></div>
+  <div class="section"><div class="section-title">📋 全部词条 <span style="font-weight:400;color:var(--gray-400);font-size:13px">${terms.length} 个</span></div><div class="cards-grid">${terms.map(t=>renderCard(t)).join('')}</div></div>`;
+}
+
+function renderCard(t){
+  return `<div class="card" onclick="navigate('detail','${t.id}')">
+    <div class="card-header"><span class="card-name">${t.name}</span><span class="difficulty difficulty-${t.difficulty}">${t.difficulty}</span></div>
+    ${t.en&&t.en!==t.name?`<div class="card-en">${t.en}</div>`:''}
+    <div class="card-desc">${t.one}</div>
+    <div class="card-tags">${t.tags.slice(0,3).map(g=>`<span class="card-tag">${g}</span>`).join('')}</div>
+  </div>`;
+}
+
+// ===== RENDER: DETAIL =====
+function renderDetail(id){
+  const t=terms.find(x=>x.id===id);
+  if(!t)return'<div class="detail"><p>未找到词条</p><span class="back-btn" onclick="navigate(\'home\')">← 返回首页</span></div>';
+  const related=t.related.map(r=>terms.find(x=>x.id===r||x.name===r)).filter(Boolean);
+  const slug=catSlug(t.category);
+  return `<div class="detail fade-in">
+    <nav class="breadcrumb"><a onclick="navigate('home')">首页</a><span>/</span><a onclick="navigate('category','','${slug}')">${t.category}</a><span>/</span><span style="color:var(--gray-600)">${t.name}</span></nav>
+    <div class="detail-header">
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:8px"><h1>${t.name}</h1><span class="difficulty difficulty-${t.difficulty}">${t.difficulty}</span></div>
+      ${t.en&&t.en!==t.name?`<div class="detail-en">${t.en}</div>`:''}
+      ${t.aliases&&t.aliases.length?`<div class="detail-aliases">${t.aliases.map(a=>`<span class="detail-alias">${a}</span>`).join('')}</div>`:''}
+      <div class="detail-sentence">${t.one}</div>
+    </div>
+    <div class="detail-section"><h2>💬 人话解释</h2><div class="detail-box purple">${t.plain}</div></div>
+    <div class="detail-section"><h2>🔬 技术解释</h2><p class="detail-text">${t.tech}</p></div>
+    <div class="detail-section"><h2>❓ 为什么会出现</h2><p class="detail-text">${t.why}</p></div>
+    ${t.biz?`<div class="detail-section"><h2>💼 商务人员怎么理解</h2><div class="detail-box amber">${t.biz}</div></div>`:''}
+    <div class="detail-section"><h2>🎯 典型应用场景</h2><div style="display:grid;gap:8px">${t.useCases.map((u,i)=>`<div class="use-case"><span class="num">${i+1}</span><span class="text">${u}</span></div>`).join('')}</div></div>
+    <div class="detail-section"><h2>📌 应用案例</h2><div style="display:grid;gap:8px">${t.examples.map(e=>`<div class="example-box">${e}</div>`).join('')}</div></div>
+    ${related.length?`<div class="detail-section"><h2>🔗 相关术语</h2><div class="related-wrap">${related.map(r=>`<span class="related-item" onclick="navigate('detail','${r.id}')">${r.name}</span>`).join('')}</div></div>`:''}
+    <div class="detail-section"><h2>🏷️ 标签</h2><div class="tag-wrap">${t.tags.map(g=>`<span class="tag-item" onclick="doSearch('${g}')">${g}</span>`).join('')}</div></div>
+    <span class="back-btn" onclick="navigate('home')">← 返回首页</span>
+  </div>`;
+}
+
+// ===== RENDER: CATEGORY =====
+function renderCategory(slug){
+  const cat=categories.find(c=>c.slug===slug);
+  if(!cat)return'<div class="detail"><p>未找到分类</p><span class="back-btn" onclick="navigate(\'home\')">← 返回首页</span></div>';
+  const catTerms=getTermsByCat(cat.name);
+  return `<div style="max-width:960px;margin:0 auto;padding:32px 16px" class="fade-in">
+    <nav class="breadcrumb"><a onclick="navigate('home')">首页</a><span>/</span><span style="color:var(--gray-600)">${cat.name}</span></nav>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px"><span style="font-size:2rem">${cat.icon}</span><h1 style="font-size:1.75rem;font-weight:700">${cat.name}</h1></div>
+    <p style="color:var(--gray-500);margin-bottom:24px">${cat.desc} · ${catTerms.length} 个词条</p>
+    ${catTerms.length?`<div class="cards-grid">${catTerms.map(t=>renderCard(t)).join('')}</div>`:'<div class="empty"><p>该分类暂无词条</p></div>'}
+    <div style="margin-top:32px"><div class="section-title">其他分类</div><div style="display:flex;flex-wrap:wrap;gap:8px">${categories.filter(c=>c.slug!==slug).map(c=>`<span class="related-item" onclick="navigate('category','','${c.slug}')">${c.icon} ${c.name}</span>`).join('')}</div></div>
+    <span class="back-btn" onclick="navigate('home')">← 返回首页</span>
+  </div>`;
+}
+
+// ===== ACTIONS =====
+function doSearch(q){searchQuery=q.trim();render();const input=document.getElementById('searchInput');if(input)input.value=searchQuery;}
+
+// ===== INIT =====
+render();
+</script>
+</body>
+</html>
